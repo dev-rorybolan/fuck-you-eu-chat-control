@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flask WebSocket Chat</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        /* --- Reset & Font --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* --- Chat Container --- */
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            width: 400px;
+            height: 500px;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            background: #fff;
+        }
+
+        /* --- Header --- */
+        .chat-header {
+            background: #4a90e2;
+            color: #fff;
+            padding: 16px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* --- Messages Area --- */
+        #messages {
+            flex-grow: 1;
+            list-style: none;
+            padding: 16px;
+            margin: 0;
+            overflow-y: auto;
+        }
+
+        #messages li {
+            background: #f1f1f1;
+            margin-bottom: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        /* --- Input Area --- */
+        .chat-input {
+            display: flex;
+            border-top: 1px solid #ddd;
+        }
+
+        #msgInput {
+            flex-grow: 1;
+            padding: 12px;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        button {
+            background: #4a90e2;
+            color: #fff;
+            border: none;
+            padding: 0 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #357ab8;
+        }
+
+        /* --- Scrollbar --- */
+        #messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #messages::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div class="chat-header">WebSocket Chat</div>
+        <ul id="messages"></ul>
+        <div class="chat-input">
+            <input id="msgInput" placeholder="Type a message..." autocomplete="off">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const messagesList = document.getElementById('messages');
+        document.addEventListener("keydown", function(event) {
+          if (event.key === "Enter") {
+            event.preventDefault(); // optional, stops forms from submitting
+            sendMessage()
+          }
+        });
+        socket.on('message', function(msg){
+            const li = document.createElement('li');
+            // remove server prefix if present
+            li.textContent = msg.replace(/^server received: /, '');
+            messagesList.appendChild(li);
+
+            // Auto-scroll if user is at bottom
+            const isAtBottom = messagesList.scrollHeight - messagesList.scrollTop === messagesList.clientHeight;
+            if (isAtBottom) {
+                li.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('msgInput');
+            const msg = input.value.trim();
+            if (msg !== "") {
+                socket.send(msg);
+                input.value = '';
+            }
+        }
+    </script>
+</body>
+</html>
