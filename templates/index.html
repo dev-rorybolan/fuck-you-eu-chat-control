@@ -17,7 +17,7 @@
             background: #f4f7fa;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: stretch;
             height: 100vh;
         }
 
@@ -26,10 +26,16 @@
             display: flex;
             flex-direction: column;
             width: 400px;
-            height: 500px;
+            height: 60vh;
             border: 1px solid #ccc;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             background: #fff;
+        }
+        @media (max-width: 600px) {
+            #chat-container {
+                height: 100vh; /* full screen on small devices */
+                margin: 0;
+            }
         }
 
         /* --- Header --- */
@@ -109,21 +115,25 @@
     </div>
 
     <script>
-        const socket = io();
+        const socket = io('/general');
         const messagesList = document.getElementById('messages');
+
+
+        const username = "{{ session['username'] }}";
+
         document.addEventListener("keydown", function(event) {
           if (event.key === "Enter") {
-            event.preventDefault(); // optional, stops forms from submitting
-            sendMessage()
+            event.preventDefault();
+            sendMessage();
           }
         });
+
         socket.on('message', function(msg){
             const li = document.createElement('li');
-            // remove server prefix if present
             li.textContent = msg.replace(/^server received: /, '');
             messagesList.appendChild(li);
 
-            // Auto-scroll if user is at bottom
+
             const isAtBottom = messagesList.scrollHeight - messagesList.scrollTop === messagesList.clientHeight;
             if (isAtBottom) {
                 li.scrollIntoView({ behavior: 'smooth' });
@@ -134,7 +144,8 @@
             const input = document.getElementById('msgInput');
             const msg = input.value.trim();
             if (msg !== "") {
-                socket.send(msg);
+
+                socket.send({ username: username, msg: msg, channel: "general" });
                 input.value = '';
             }
         }

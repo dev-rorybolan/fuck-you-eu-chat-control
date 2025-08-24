@@ -109,21 +109,25 @@
     </div>
 
     <script>
-        const socket = io();
+        const socket = io('/gaming');
         const messagesList = document.getElementById('messages');
+
+
+        const username = "{{ session['username'] }}";
+
         document.addEventListener("keydown", function(event) {
           if (event.key === "Enter") {
-            event.preventDefault(); // optional, stops forms from submitting
-            sendMessage()
+            event.preventDefault();
+            sendMessage();
           }
         });
+
         socket.on('message', function(msg){
             const li = document.createElement('li');
-            // remove server prefix if present
             li.textContent = msg.replace(/^server received: /, '');
             messagesList.appendChild(li);
 
-            // Auto-scroll if user is at bottom
+
             const isAtBottom = messagesList.scrollHeight - messagesList.scrollTop === messagesList.clientHeight;
             if (isAtBottom) {
                 li.scrollIntoView({ behavior: 'smooth' });
@@ -134,7 +138,8 @@
             const input = document.getElementById('msgInput');
             const msg = input.value.trim();
             if (msg !== "") {
-                socket.send(msg);
+
+                socket.send({ username: username, msg: msg, channel: "gaming" });
                 input.value = '';
             }
         }

@@ -1,5 +1,5 @@
-from database import Database
+from db import Database
 
 database: Database = Database()
 
-print(database.get_messages(channel='/general'))
+print(database.load_messages(channel='/general'))
